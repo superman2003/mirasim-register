@@ -16,7 +16,13 @@ from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
 from mirasim_api import DEFAULT_LOGIN_BASE, MirasimClient
-from register import RegisterResult, append_accounts, register_batch, register_one
+from register import (
+    RegisterResult,
+    append_accounts,
+    load_invite_queue_from_accounts,
+    register_batch,
+    register_one,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 CONFIG_PATH = BASE_DIR / "config.json"
@@ -204,11 +210,24 @@ async def api_register(body: RegisterBody) -> dict[str, Any]:
     def worker() -> None:
         try:
             push(f"任务启动 count={body.count} base={cfg.get('login_base')}")
+            # Always go through batch helper so historical invites from accounts.json
+            # are auto-loaded even when count=1 / seed_invite is empty.
             if body.count == 1 and body.email:
+                # Preserve fixed-email single register, but still auto-pick invite.
+                queue = load_invite_queue_from_accounts(
+                    ACCOUNTS_PATH,
+                    default_uses=invite_uses,
+                    seed_invite=seed or None,
+                )
+                auto_invite = queue[0][0] if queue else (seed or None)
+                if auto_invite:
+                    push(f"自动使用历史邀请码: {auto_invite}")
+                else:
+                    push("未找到可用历史邀请码，仅邮箱登录")
                 result = register_one(
                     imap_cfg=_imap_cfg(cfg),
                     login_base=str(cfg.get("login_base") or DEFAULT_LOGIN_BASE),
-                    invite_code=seed or None,
+                    invite_code=auto_invite,
                     email=body.email,
                     otp_timeout=int(cfg.get("otp_timeout") or 120),
                     create_invite=body.create_invite,
@@ -226,6 +245,7 @@ async def api_register(body: RegisterBody) -> dict[str, Any]:
                     create_invite=body.create_invite,
                     stop_on_error=body.stop_on_error,
                     invite_uses_per_code=invite_uses,
+                    accounts_path=ACCOUNTS_PATH,
                     log=push,
                     on_account=on_account,
                 )

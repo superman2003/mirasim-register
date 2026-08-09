@@ -13,6 +13,7 @@ Uses QQ IMAP + a catch-all domain mailbox to receive the 6-digit login code, the
 - `POST /auth/code` → verify → optional `/auth/invite/redeem`
 - Create / fetch referral invite via `/auth/referral`
 - Batch register with invite reuse (default 10 uses per code) then queue the next code
+- Auto-load unused invite codes from local `data/accounts.json` when seed invite is empty
 - Simple web UI + SSE live logs
 - Accounts saved locally to `data/accounts.json` (gitignored)
 

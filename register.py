@@ -129,6 +129,89 @@ def _invite_quota(result: RegisterResult, default_uses: int) -> int:
     return max(1, int(default_uses))
 
 
+def _quota_from_account(acc: dict[str, Any], default_uses: int) -> int:
+    ref = acc.get("referral") if isinstance(acc.get("referral"), dict) else {}
+    for key in ("threshold", "remaining", "max_redemptions"):
+        try:
+            n = int(ref.get(key) or 0)
+        except Exception:
+            n = 0
+        if n > 0:
+            # threshold is the "need N invites for upgrade" quota users care about
+            if key == "max_redemptions" and n > 20:
+                continue
+            return n
+    return max(1, int(default_uses))
+
+
+def load_invite_queue_from_accounts(
+    path: Path | None,
+    *,
+    default_uses: int = 10,
+    seed_invite: str | None = None,
+) -> list[tuple[str, int]]:
+    """Build invite queue from saved accounts: unused-capacity codes first.
+
+    Counts how many times each ``invite_created`` already appears as ``invite_used``
+    in local history, then enqueues codes that still have remaining local quota.
+    """
+    default_uses = max(1, int(default_uses or 10))
+    seed = (seed_invite or "").strip() or None
+    if not path or not path.exists():
+        return [(seed, default_uses)] if seed else []
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        data = []
+    if not isinstance(data, list):
+        data = []
+
+    used_count: dict[str, int] = {}
+    created_meta: dict[str, dict[str, Any]] = {}
+    created_order: list[str] = []
+
+    for acc in data:
+        if not isinstance(acc, dict) or not acc.get("ok"):
+            continue
+        used = (acc.get("invite_used") or "").strip()
+        if used:
+            used_count[used] = used_count.get(used, 0) + 1
+        created = (acc.get("invite_created") or "").strip()
+        if created and created not in created_meta:
+            created_meta[created] = acc
+            created_order.append(created)
+
+    queue: list[tuple[str, int]] = []
+    seen: set[str] = set()
+
+    def push(code: str, quota: int) -> None:
+        code = (code or "").strip()
+        if not code or code in seen:
+            return
+        left = max(0, int(quota) - int(used_count.get(code, 0)))
+        if left <= 0:
+            return
+        queue.append((code, left))
+        seen.add(code)
+
+    if seed:
+        # Prefer explicit seed; estimate quota from history if known
+        if seed in created_meta:
+            push(seed, _quota_from_account(created_meta[seed], default_uses))
+        else:
+            left = max(0, default_uses - int(used_count.get(seed, 0)))
+            if left > 0:
+                queue.append((seed, left))
+                seen.add(seed)
+
+    # Oldest created codes first so early invites get filled to 10
+    for code in created_order:
+        push(code, _quota_from_account(created_meta[code], default_uses))
+
+    return queue
+
+
 def register_batch(
     *,
     imap_cfg: dict[str, Any],
@@ -139,6 +222,7 @@ def register_batch(
     create_invite: bool = True,
     stop_on_error: bool = True,
     invite_uses_per_code: int = 10,
+    accounts_path: Path | None = None,
     log: LogFn | None = None,
     on_account: Callable[[RegisterResult], None] | None = None,
 ) -> list[RegisterResult]:
@@ -147,17 +231,30 @@ def register_batch(
     Each invite code is reused up to ``invite_uses_per_code`` times (default 10,
     or referral.remaining/threshold when known). Newly generated invites are
     queued and only become active after the current code is exhausted.
+
+    If ``seed_invite`` is empty, unused invite codes from ``accounts_path`` are
+    loaded automatically.
     """
     results: list[RegisterResult] = []
     default_uses = max(1, int(invite_uses_per_code or 10))
 
-    current_invite = (seed_invite or "").strip() or None
-    uses_left = default_uses if current_invite else 0
-    # queue of (code, uses_left) produced by successful signups
-    invite_queue: list[tuple[str, int]] = []
-    seen_codes: set[str] = set()
-    if current_invite:
-        seen_codes.add(current_invite)
+    invite_queue = load_invite_queue_from_accounts(
+        accounts_path,
+        default_uses=default_uses,
+        seed_invite=seed_invite,
+    )
+    seen_codes = {code for code, _ in invite_queue}
+    current_invite: str | None = None
+    uses_left = 0
+
+    if invite_queue:
+        current_invite, uses_left = invite_queue.pop(0)
+        _log(
+            log,
+            f"自动载入邀请码: {current_invite} (本地剩余约 {uses_left} 次，队列还有 {len(invite_queue)} 枚)",
+        )
+    else:
+        _log(log, "未找到可用历史邀请码；本批将先邮箱登录，成功后再生成邀请码")
 
     for i in range(max(1, int(count))):
         # If no active invite, pull from queue (e.g. first account minted one)

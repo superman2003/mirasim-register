@@ -1,10 +1,10 @@
-﻿{
+{
   "login_base": "https://admin.test.mirofish.ai",
   "imap_server": "imap.qq.com",
   "imap_port": 993,
   "email": "your_qq@qq.com",
-  "auth_code": "your_qq_imap_auth_code",
-  "catch_all_domain": "mail.example.com",
+  "auth_code": "qq_imap_auth_code",
+  "catch_all_domain": "edu.example.com",
   "seed_invite": "",
   "otp_timeout": 120,
   "invite_uses_per_code": 10

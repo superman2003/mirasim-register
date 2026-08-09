@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mirasim 注册面板</title>
+<title>Mirasim 娉ㄥ唽闈㈡澘</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -185,26 +185,26 @@
 <div class="wrap">
   <div class="header">
     <div class="badge">Mirasim / Mirofish</div>
-    <h1>注册面板 <span>Invite Chain</span></h1>
-    <p class="sub">QQ IMAP + 域名 catch-all 收验证码 · 自动兑换邀请码 · 生成邀请码继续拉人</p>
+    <h1>娉ㄥ唽闈㈡澘 <span>Invite Chain</span></h1>
+    <p class="sub">QQ IMAP + 鍩熷悕 catch-all 鏀堕獙璇佺爜 路 鑷姩澶嶇敤宸叉敞鍐岃处鍙烽個璇风爜锛堥粯璁ゆ瘡鏋?10 娆★級路 鐢ㄦ弧鍐嶆崲涓嬩竴鏋?/p>
   </div>
 
   <div class="grid">
     <div>
       <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">配置</div>
+        <div class="card-title">閰嶇疆</div>
         <label>Login Base</label>
         <select id="login_base">
-          <option value="https://admin.test.mirofish.ai">https://admin.test.mirofish.ai (当前包默认)</option>
+          <option value="https://admin.test.mirofish.ai">https://admin.test.mirofish.ai (褰撳墠鍖呴粯璁?</option>
           <option value="https://admin.mirofish.ai">https://admin.mirofish.ai</option>
         </select>
         <div class="row">
           <div>
-            <label>QQ IMAP 邮箱</label>
+            <label>QQ IMAP 閭</label>
             <input id="email" type="text" placeholder="xxx@qq.com">
           </div>
           <div>
-            <label>IMAP 授权码</label>
+            <label>IMAP 鎺堟潈鐮?/label>
             <input id="auth_code" type="password" placeholder="QQ IMAP auth code">
           </div>
         </div>
@@ -218,60 +218,60 @@
             <input id="imap_port" type="number" value="993">
           </div>
           <div>
-            <label>Catch-all 域名</label>
-            <input id="catch_all_domain" type="text" placeholder="edu.rjkk.cc">
+            <label>Catch-all 鍩熷悕</label>
+            <input id="catch_all_domain" type="text" placeholder="mail.example.com">
           </div>
         </div>
         <div class="row3">
           <div>
-            <label>种子邀请码（可空）</label>
-            <input id="seed_invite" type="text" placeholder="批量时每枚用满次数再换下一枚">
+            <label>绉嶅瓙閭€璇风爜锛堝彲绌猴級</label>
+            <input id="seed_invite" type="text" placeholder="鎵归噺鏃舵瘡鏋氱敤婊℃鏁板啀鎹笅涓€鏋?>
           </div>
           <div>
-            <label>每枚邀请码使用次数</label>
+            <label>姣忔灇閭€璇风爜浣跨敤娆℃暟</label>
             <input id="invite_uses_per_code" type="number" value="10" min="1" max="50">
           </div>
           <div>
-            <label>OTP 超时（秒）</label>
+            <label>OTP 瓒呮椂锛堢锛?/label>
             <input id="otp_timeout" type="number" value="120">
           </div>
         </div>
         <div class="btns">
-          <button class="btn-secondary" id="btnSave">保存配置</button>
-          <button class="btn-ghost" id="btnReload">重新加载</button>
+          <button class="btn-secondary" id="btnSave">淇濆瓨閰嶇疆</button>
+          <button class="btn-ghost" id="btnReload">閲嶆柊鍔犺浇</button>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">注册</div>
+        <div class="card-title">娉ㄥ唽</div>
         <div class="row">
           <div>
-            <label>批量数量</label>
+            <label>鎵归噺鏁伴噺</label>
             <input id="count" type="number" value="1" min="1" max="50">
           </div>
           <div>
-            <label>指定邮箱（可选，仅 count=1）</label>
-            <input id="fixed_email" type="text" placeholder="空则自动生成 catch-all">
+            <label>鎸囧畾閭锛堝彲閫夛紝浠?count=1锛?/label>
+            <input id="fixed_email" type="text" placeholder="绌哄垯鑷姩鐢熸垚 catch-all">
           </div>
         </div>
         <div class="checks">
-          <label><input id="create_invite" type="checkbox" checked> 注册后生成/获取邀请码</label>
-          <label><input id="stop_on_error" type="checkbox" checked> 出错即停止</label>
+          <label><input id="create_invite" type="checkbox" checked> 娉ㄥ唽鍚庣敓鎴?鑾峰彇閭€璇风爜</label>
+          <label><input id="stop_on_error" type="checkbox" checked> 鍑洪敊鍗冲仠姝?/label>
         </div>
         <div class="btns">
-          <button class="btn-primary" id="btnStart">开始注册</button>
-          <button class="btn-secondary" id="btnRefreshAcc">刷新账号列表</button>
+          <button class="btn-primary" id="btnStart">寮€濮嬫敞鍐?/button>
+          <button class="btn-secondary" id="btnRefreshAcc">鍒锋柊璐﹀彿鍒楄〃</button>
         </div>
       </div>
     </div>
 
     <div>
       <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">实时日志</div>
+        <div class="card-title">瀹炴椂鏃ュ織</div>
         <div class="log" id="log"></div>
       </div>
       <div class="card">
-        <div class="card-title">账号 / 邀请码</div>
+        <div class="card-title">璐﹀彿 / 閭€璇风爜</div>
         <div class="accounts" id="accounts"></div>
       </div>
     </div>
@@ -358,8 +358,8 @@ async function saveConfig() {
     body: JSON.stringify(body),
   });
   const data = await r.json();
-  if (data.ok) { toast('配置已保存'); appendLog('配置已保存', 'ok'); }
-  else { toast('保存失败'); appendLog('配置保存失败', 'err'); }
+  if (data.ok) { toast('閰嶇疆宸蹭繚瀛?); appendLog('閰嶇疆宸蹭繚瀛?, 'ok'); }
+  else { toast('淇濆瓨澶辫触'); appendLog('閰嶇疆淇濆瓨澶辫触', 'err'); }
 }
 
 function renderAccount(acc, prepend=true) {
@@ -373,21 +373,21 @@ function renderAccount(acc, prepend=true) {
       <div class="email">${escapeHtml(acc.email || '-')}</div>
       <span class="pill ${ok ? 'ok' : 'err'}">${ok ? 'OK' : 'FAIL'}</span>
     </div>
-    <div class="kv">用过邀请码: <b>${escapeHtml(acc.invite_used || '-')}</b></div>
-    <div class="kv">新邀请码: <b>${escapeHtml(invite)}</b></div>
-    <div class="kv">时间: <b>${escapeHtml(acc.created_at || '-')}</b></div>
-    ${acc.error ? `<div class="kv" style="color:var(--warn)">错误: ${escapeHtml(acc.error)}</div>` : ''}
+    <div class="kv">鐢ㄨ繃閭€璇风爜: <b>${escapeHtml(acc.invite_used || '-')}</b></div>
+    <div class="kv">鏂伴個璇风爜: <b>${escapeHtml(invite)}</b></div>
+    <div class="kv">鏃堕棿: <b>${escapeHtml(acc.created_at || '-')}</b></div>
+    ${acc.error ? `<div class="kv" style="color:var(--warn)">閿欒: ${escapeHtml(acc.error)}</div>` : ''}
     <div class="copy">
-      <button class="btn-secondary" data-copy="${escapeHtml(invite)}">复制邀请码</button>
-      <button class="btn-ghost" data-copy="${escapeHtml(acc.access_token || '')}">复制 Token</button>
+      <button class="btn-secondary" data-copy="${escapeHtml(invite)}">澶嶅埗閭€璇风爜</button>
+      <button class="btn-ghost" data-copy="${escapeHtml(acc.access_token || '')}">澶嶅埗 Token</button>
     </div>
   `;
   div.querySelectorAll('[data-copy]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const v = btn.getAttribute('data-copy') || '';
-      if (!v || v === '-') { toast('无内容'); return; }
+      if (!v || v === '-') { toast('鏃犲唴瀹?); return; }
       await navigator.clipboard.writeText(v);
-      toast('已复制');
+      toast('宸插鍒?);
     });
   });
   if (prepend) box.prepend(div); else box.appendChild(div);
@@ -416,7 +416,7 @@ async function startRegister() {
     email: count === 1 ? ($('fixed_email').value.trim() || null) : null,
   };
   $('btnStart').disabled = true;
-  appendLog(`发起注册任务 count=${count}`, 'dim');
+  appendLog(`鍙戣捣娉ㄥ唽浠诲姟 count=${count}`, 'dim');
   if (es) { es.close(); es = null; }
   try {
     const r = await fetch('/api/register', {
@@ -426,7 +426,7 @@ async function startRegister() {
     });
     const data = await r.json();
     if (!data.ok) {
-      appendLog('启动失败: ' + (data.error || r.status), 'err');
+      appendLog('鍚姩澶辫触: ' + (data.error || r.status), 'err');
       $('btnStart').disabled = false;
       return;
     }
@@ -437,12 +437,12 @@ async function startRegister() {
       try {
         const item = JSON.parse(ev.data);
         const msg = item.msg || '';
-        const cls = /失败|错误|异常|FAIL/i.test(msg) ? 'err'
-          : /成功|完成|就绪|OK/i.test(msg) ? 'ok' : '';
+        const cls = /澶辫触|閿欒|寮傚父|FAIL/i.test(msg) ? 'err'
+          : /鎴愬姛|瀹屾垚|灏辩华|OK/i.test(msg) ? 'ok' : '';
         appendLog(msg, cls);
-        const m = msg.match(/启用队列邀请码:\s*(\S+)/);
+        const m = msg.match(/鍚敤闃熷垪閭€璇风爜:\s*(\S+)/);
         if (m) $('seed_invite').value = m[1];
-        const m2 = msg.match(/本轮邀请码:\s*(\S+)/);
+        const m2 = msg.match(/鏈疆閭€璇风爜:\s*(\S+)/);
         if (m2) $('seed_invite').value = m2[1];
       } catch {}
     });
@@ -455,16 +455,16 @@ async function startRegister() {
     es.addEventListener('done', (ev) => {
       try {
         const d = JSON.parse(ev.data);
-        appendLog(`任务结束 status=${d.status} summary=${JSON.stringify(d.summary||{})}`, d.status==='done'?'ok':'err');
+        appendLog(`浠诲姟缁撴潫 status=${d.status} summary=${JSON.stringify(d.summary||{})}`, d.status==='done'?'ok':'err');
       } catch {
-        appendLog('任务结束', 'ok');
+        appendLog('浠诲姟缁撴潫', 'ok');
       }
       if (es) { es.close(); es = null; }
       $('btnStart').disabled = false;
       loadAccounts();
     });
     es.onerror = () => {
-      appendLog('SSE 连接中断（若任务已结束可忽略）', 'dim');
+      appendLog('SSE 杩炴帴涓柇锛堣嫢浠诲姟宸茬粨鏉熷彲蹇界暐锛?, 'dim');
     };
   } catch (e) {
     appendLog(String(e), 'err');
@@ -481,3 +481,4 @@ loadConfig().then(loadAccounts);
 </script>
 </body>
 </html>
+
