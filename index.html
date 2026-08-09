@@ -219,13 +219,17 @@
           </div>
           <div>
             <label>Catch-all 域名</label>
-            <input id="catch_all_domain" type="text" placeholder="mail.example.com">
+            <input id="catch_all_domain" type="text" placeholder="edu.rjkk.cc">
           </div>
         </div>
-        <div class="row">
+        <div class="row3">
           <div>
-            <label>种子邀请码（第一个号用）</label>
-            <input id="seed_invite" type="text" placeholder="可空；批量时会接力下一枚">
+            <label>种子邀请码（可空）</label>
+            <input id="seed_invite" type="text" placeholder="批量时每枚用满次数再换下一枚">
+          </div>
+          <div>
+            <label>每枚邀请码使用次数</label>
+            <input id="invite_uses_per_code" type="number" value="10" min="1" max="50">
           </div>
           <div>
             <label>OTP 超时（秒）</label>
@@ -279,7 +283,7 @@
 const $ = (id) => document.getElementById(id);
 const fields = [
   'login_base','email','auth_code','imap_server','imap_port',
-  'catch_all_domain','seed_invite','otp_timeout'
+  'catch_all_domain','seed_invite','invite_uses_per_code','otp_timeout'
 ];
 let es = null;
 
@@ -316,6 +320,7 @@ function readFormConfig() {
     imap_port: Number($('imap_port').value || 993),
     catch_all_domain: $('catch_all_domain').value.trim(),
     seed_invite: $('seed_invite').value.trim(),
+    invite_uses_per_code: Number($('invite_uses_per_code').value || 10),
     otp_timeout: Number($('otp_timeout').value || 120),
   };
 }
@@ -405,6 +410,7 @@ async function startRegister() {
     seed_invite: cfg.seed_invite,
     login_base: cfg.login_base,
     otp_timeout: cfg.otp_timeout,
+    invite_uses_per_code: cfg.invite_uses_per_code || 10,
     create_invite: $('create_invite').checked,
     stop_on_error: $('stop_on_error').checked,
     email: count === 1 ? ($('fixed_email').value.trim() || null) : null,
@@ -434,9 +440,9 @@ async function startRegister() {
         const cls = /失败|错误|异常|FAIL/i.test(msg) ? 'err'
           : /成功|完成|就绪|OK/i.test(msg) ? 'ok' : '';
         appendLog(msg, cls);
-        const m = msg.match(/下一轮将使用新邀请码:\s*(\S+)/);
+        const m = msg.match(/启用队列邀请码:\s*(\S+)/);
         if (m) $('seed_invite').value = m[1];
-        const m2 = msg.match(/邀请码就绪:\s*(\S+)/);
+        const m2 = msg.match(/本轮邀请码:\s*(\S+)/);
         if (m2) $('seed_invite').value = m2[1];
       } catch {}
     });
@@ -444,9 +450,6 @@ async function startRegister() {
       try {
         const acc = JSON.parse(ev.data);
         renderAccount(acc, true);
-        if (acc.ok && acc.invite_created) {
-          $('seed_invite').value = acc.invite_created;
-        }
       } catch {}
     });
     es.addEventListener('done', (ev) => {

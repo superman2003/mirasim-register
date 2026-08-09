@@ -12,7 +12,7 @@ Uses QQ IMAP + a catch-all domain mailbox to receive the 6-digit login code, the
 - Generate catch-all alias emails and poll QQ IMAP for Mirasim OTP
 - `POST /auth/code` → verify → optional `/auth/invite/redeem`
 - Create / fetch referral invite via `/auth/referral`
-- Batch register with invite-code chaining (each success feeds the next)
+- Batch register with invite reuse (default 10 uses per code) then queue the next code
 - Simple web UI + SSE live logs
 - Accounts saved locally to `data/accounts.json` (gitignored)
 
@@ -41,7 +41,8 @@ Edit `config.json`:
   "auth_code": "your_qq_imap_auth_code",
   "catch_all_domain": "mail.example.com",
   "seed_invite": "",
-  "otp_timeout": 120
+  "otp_timeout": 120,
+  "invite_uses_per_code": 10
 }
 ```
 

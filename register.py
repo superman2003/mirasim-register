@@ -116,6 +116,19 @@ def register_one(
         return RegisterResult(ok=False, email=email or "", invite_used=invite_code, error=str(e), created_at=_now_iso())
 
 
+def _invite_quota(result: RegisterResult, default_uses: int) -> int:
+    """How many times a freshly created invite should be reused."""
+    ref = result.referral or {}
+    for key in ("remaining", "threshold"):
+        try:
+            n = int(ref.get(key) or 0)
+        except Exception:
+            n = 0
+        if n > 0:
+            return n
+    return max(1, int(default_uses))
+
+
 def register_batch(
     *,
     imap_cfg: dict[str, Any],
@@ -125,23 +138,43 @@ def register_batch(
     otp_timeout: int = 120,
     create_invite: bool = True,
     stop_on_error: bool = True,
+    invite_uses_per_code: int = 10,
     log: LogFn | None = None,
     on_account: Callable[[RegisterResult], None] | None = None,
 ) -> list[RegisterResult]:
+    """Batch register with invite reuse.
+
+    Each invite code is reused up to ``invite_uses_per_code`` times (default 10,
+    or referral.remaining/threshold when known). Newly generated invites are
+    queued and only become active after the current code is exhausted.
+    """
     results: list[RegisterResult] = []
-    next_invite = (seed_invite or "").strip() or None
+    default_uses = max(1, int(invite_uses_per_code or 10))
+
+    current_invite = (seed_invite or "").strip() or None
+    uses_left = default_uses if current_invite else 0
+    # queue of (code, uses_left) produced by successful signups
+    invite_queue: list[tuple[str, int]] = []
+    seen_codes: set[str] = set()
+    if current_invite:
+        seen_codes.add(current_invite)
 
     for i in range(max(1, int(count))):
+        # If no active invite, pull from queue (e.g. first account minted one)
+        if not current_invite and invite_queue:
+            current_invite, uses_left = invite_queue.pop(0)
+            _log(log, f"启用队列邀请码: {current_invite} (可再用不超 {uses_left} 次)")
+
         _log(log, f"======== 第 {i + 1}/{count} 个 ========")
-        if next_invite:
-            _log(log, f"本轮邀请码: {next_invite}")
+        if current_invite:
+            _log(log, f"本轮邀请码: {current_invite} (剩余计划使用 {uses_left} 次)")
         else:
-            _log(log, "本轮无邀请码（仅邮箱登录）")
+            _log(log, "本轮无邀请码（仅邮箱登录；成功后会生成邀请码入队）")
 
         result = register_one(
             imap_cfg=imap_cfg,
             login_base=login_base,
-            invite_code=next_invite,
+            invite_code=current_invite,
             otp_timeout=otp_timeout,
             create_invite=create_invite,
             log=log,
@@ -151,14 +184,38 @@ def register_batch(
             on_account(result)
 
         if not result.ok:
-            if stop_on_error:
+            # Redeem failures (code used up / invalid): rotate to next queued invite
+            err = (result.error or "").lower()
+            if current_invite and any(
+                k in err for k in ("invite", "redeem", "code", "额度", "次数", "无效", "expired")
+            ):
+                _log(log, f"邀请码疑似失效，丢弃: {current_invite}")
+                current_invite = None
+                uses_left = 0
+            if stop_on_error and not invite_queue and not current_invite:
+                _log(log, "遇到错误且无可用邀请码，停止批量")
+                break
+            if stop_on_error and current_invite:
                 _log(log, "遇到错误，停止批量")
                 break
             continue
 
+        # Enqueue newly minted invite for later reuse (do NOT switch immediately)
         if create_invite and result.invite_created:
-            next_invite = result.invite_created
-            _log(log, f"下一轮将使用新邀请码: {next_invite}")
+            code = result.invite_created.strip()
+            if code and code not in seen_codes:
+                quota = _invite_quota(result, default_uses)
+                invite_queue.append((code, quota))
+                seen_codes.add(code)
+                _log(log, f"新邀请码入队: {code} (可用 {quota} 次，队列长度 {len(invite_queue)})")
+
+        if current_invite and result.invite_used:
+            uses_left -= 1
+            _log(log, f"邀请码 {current_invite} 本批已用，剩余计划 {max(0, uses_left)} 次")
+            if uses_left <= 0:
+                _log(log, f"邀请码已用满计划次数，准备切换: {current_invite}")
+                current_invite = None
+                uses_left = 0
 
         time.sleep(1.2)
 

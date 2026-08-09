@@ -42,6 +42,7 @@ def _default_config() -> dict[str, Any]:
         "catch_all_domain": "",
         "seed_invite": "",
         "otp_timeout": 120,
+        "invite_uses_per_code": 10,
     }
 
 
@@ -92,6 +93,7 @@ class ConfigBody(BaseModel):
     catch_all_domain: str = ""
     seed_invite: str = ""
     otp_timeout: int = Field(default=120, ge=30, le=600)
+    invite_uses_per_code: int = Field(default=10, ge=1, le=50)
 
 
 class RegisterBody(BaseModel):
@@ -102,6 +104,7 @@ class RegisterBody(BaseModel):
     otp_timeout: int | None = Field(default=None, ge=30, le=600)
     create_invite: bool = True
     stop_on_error: bool = True
+    invite_uses_per_code: int | None = Field(default=None, ge=1, le=50)
     # optional one-shot IMAP overrides
     imap_server: str | None = None
     imap_port: int | None = None
@@ -168,6 +171,11 @@ async def api_register(body: RegisterBody) -> dict[str, Any]:
         cfg["catch_all_domain"] = body.catch_all_domain
 
     seed = (body.seed_invite if body.seed_invite is not None else cfg.get("seed_invite") or "") or ""
+    invite_uses = int(
+        body.invite_uses_per_code
+        if body.invite_uses_per_code is not None
+        else (cfg.get("invite_uses_per_code") or 10)
+    )
     task_id = uuid.uuid4().hex[:12]
     with _tasks_lock:
         _tasks[task_id] = {
@@ -217,6 +225,7 @@ async def api_register(body: RegisterBody) -> dict[str, Any]:
                     otp_timeout=int(cfg.get("otp_timeout") or 120),
                     create_invite=body.create_invite,
                     stop_on_error=body.stop_on_error,
+                    invite_uses_per_code=invite_uses,
                     log=push,
                     on_account=on_account,
                 )
