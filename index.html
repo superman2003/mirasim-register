@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mirasim 注册面板</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b1020;
+    --surface: #121a2b;
+    --surface-2: #1a2438;
+    --border: #2a3650;
+    --accent: #5eead4;
+    --accent-dim: #5eead422;
+    --accent-glow: #5eead433;
+    --warn: #fb7185;
+    --ok: #4ade80;
+    --text: #e8eefc;
+    --text-dim: #8b9bb8;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Noto Sans SC', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--sans);
+    background:
+      radial-gradient(900px 420px at 10% -10%, #1d4ed833, transparent 55%),
+      radial-gradient(700px 360px at 90% 0%, #0f766e33, transparent 50%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 36px 20px 64px;
+  }
+  .header { margin-bottom: 24px; }
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    background: var(--accent-dim);
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  h1 { font-size: 28px; letter-spacing: -0.4px; margin-bottom: 6px; }
+  h1 span { color: var(--accent); }
+  .sub { color: var(--text-dim); font-size: 14px; }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    backdrop-filter: blur(8px);
+  }
+  .card-title {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 0 0 6px;
+  }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1.2fr 0.8fr 1fr; gap: 10px; }
+  @media (max-width: 700px) {
+    .row, .row3 { grid-template-columns: 1fr; }
+  }
+  input[type="text"], input[type="number"], input[type="password"], select {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    margin-bottom: 10px;
+  }
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+  .checks {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 4px 0 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  .checks label { display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; }
+  .checks input { width: auto; margin: 0; }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  button {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform .12s ease, opacity .12s ease;
+  }
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: linear-gradient(135deg, #2dd4bf, #14b8a6); color: #042f2e; }
+  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent-dim); }
+  .log {
+    height: 320px;
+    overflow: auto;
+    background: #0a1220;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .log .dim { color: var(--text-dim); }
+  .log .ok { color: var(--ok); }
+  .log .err { color: var(--warn); }
+  .accounts { display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow: auto; }
+  .acc {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .acc .top {
+    display: flex; justify-content: space-between; gap: 8px; align-items: center;
+    margin-bottom: 8px;
+  }
+  .acc .email { font-family: var(--mono); font-size: 13px; word-break: break-all; }
+  .pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .pill.ok { color: var(--ok); border-color: #4ade8044; background: #4ade8014; }
+  .pill.err { color: var(--warn); border-color: #fb718544; background: #fb718514; }
+  .kv { font-size: 12px; color: var(--text-dim); margin-top: 4px; word-break: break-all; }
+  .kv b { color: var(--text); font-weight: 500; }
+  .copy {
+    margin-top: 8px;
+    display: inline-flex;
+    gap: 8px;
+  }
+  .copy button { padding: 6px 10px; font-size: 12px; }
+  .toast {
+    position: fixed; right: 18px; bottom: 18px;
+    background: #052e2b; color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 13px; display: none; z-index: 20;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="badge">Mirasim / Mirofish</div>
+    <h1>注册面板 <span>Invite Chain</span></h1>
+    <p class="sub">QQ IMAP + 域名 catch-all 收验证码 · 自动兑换邀请码 · 生成邀请码继续拉人</p>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">配置</div>
+        <label>Login Base</label>
+        <select id="login_base">
+          <option value="https://admin.test.mirofish.ai">https://admin.test.mirofish.ai (当前包默认)</option>
+          <option value="https://admin.mirofish.ai">https://admin.mirofish.ai</option>
+        </select>
+        <div class="row">
+          <div>
+            <label>QQ IMAP 邮箱</label>
+            <input id="email" type="text" placeholder="xxx@qq.com">
+          </div>
+          <div>
+            <label>IMAP 授权码</label>
+            <input id="auth_code" type="password" placeholder="QQ IMAP auth code">
+          </div>
+        </div>
+        <div class="row3">
+          <div>
+            <label>IMAP Server</label>
+            <input id="imap_server" type="text" value="imap.qq.com">
+          </div>
+          <div>
+            <label>Port</label>
+            <input id="imap_port" type="number" value="993">
+          </div>
+          <div>
+            <label>Catch-all 域名</label>
+            <input id="catch_all_domain" type="text" placeholder="mail.example.com">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>种子邀请码（第一个号用）</label>
+            <input id="seed_invite" type="text" placeholder="可空；批量时会接力下一枚">
+          </div>
+          <div>
+            <label>OTP 超时（秒）</label>
+            <input id="otp_timeout" type="number" value="120">
+          </div>
+        </div>
+        <div class="btns">
+          <button class="btn-secondary" id="btnSave">保存配置</button>
+          <button class="btn-ghost" id="btnReload">重新加载</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">注册</div>
+        <div class="row">
+          <div>
+            <label>批量数量</label>
+            <input id="count" type="number" value="1" min="1" max="50">
+          </div>
+          <div>
+            <label>指定邮箱（可选，仅 count=1）</label>
+            <input id="fixed_email" type="text" placeholder="空则自动生成 catch-all">
+          </div>
+        </div>
+        <div class="checks">
+          <label><input id="create_invite" type="checkbox" checked> 注册后生成/获取邀请码</label>
+          <label><input id="stop_on_error" type="checkbox" checked> 出错即停止</label>
+        </div>
+        <div class="btns">
+          <button class="btn-primary" id="btnStart">开始注册</button>
+          <button class="btn-secondary" id="btnRefreshAcc">刷新账号列表</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">实时日志</div>
+        <div class="log" id="log"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">账号 / 邀请码</div>
+        <div class="accounts" id="accounts"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fields = [
+  'login_base','email','auth_code','imap_server','imap_port',
+  'catch_all_domain','seed_invite','otp_timeout'
+];
+let es = null;
+
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.style.display = 'none', 1800);
+}
+
+function appendLog(msg, cls='') {
+  const box = $('log');
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  const ts = new Date().toLocaleTimeString();
+  line.innerHTML = `<span class="dim">[${ts}]</span> ${escapeHtml(msg)}`;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll('&','&amp;').replaceAll('<','&lt;')
+    .replaceAll('>','&gt;').replaceAll('"','&quot;');
+}
+
+function readFormConfig() {
+  return {
+    login_base: $('login_base').value.trim(),
+    email: $('email').value.trim(),
+    auth_code: $('auth_code').value.trim(),
+    imap_server: $('imap_server').value.trim() || 'imap.qq.com',
+    imap_port: Number($('imap_port').value || 993),
+    catch_all_domain: $('catch_all_domain').value.trim(),
+    seed_invite: $('seed_invite').value.trim(),
+    otp_timeout: Number($('otp_timeout').value || 120),
+  };
+}
+
+function fillForm(cfg) {
+  for (const k of fields) {
+    if (cfg[k] == null) continue;
+    const el = $(k);
+    if (!el) continue;
+    if (el.tagName === 'SELECT') {
+      const val = String(cfg[k]);
+      if (![...el.options].some(o => o.value === val)) {
+        const opt = document.createElement('option');
+        opt.value = val; opt.textContent = val;
+        el.appendChild(opt);
+      }
+      el.value = val;
+    } else {
+      el.value = cfg[k];
+    }
+  }
+}
+
+async function loadConfig() {
+  const r = await fetch('/api/config');
+  const data = await r.json();
+  if (data.ok) fillForm(data.config || {});
+}
+
+async function saveConfig() {
+  const body = readFormConfig();
+  const r = await fetch('/api/config', {
+    method: 'POST',
+    headers: {'content-type':'application/json'},
+    body: JSON.stringify(body),
+  });
+  const data = await r.json();
+  if (data.ok) { toast('配置已保存'); appendLog('配置已保存', 'ok'); }
+  else { toast('保存失败'); appendLog('配置保存失败', 'err'); }
+}
+
+function renderAccount(acc, prepend=true) {
+  const box = $('accounts');
+  const div = document.createElement('div');
+  div.className = 'acc';
+  const ok = !!acc.ok;
+  const invite = acc.invite_created || '-';
+  div.innerHTML = `
+    <div class="top">
+      <div class="email">${escapeHtml(acc.email || '-')}</div>
+      <span class="pill ${ok ? 'ok' : 'err'}">${ok ? 'OK' : 'FAIL'}</span>
+    </div>
+    <div class="kv">用过邀请码: <b>${escapeHtml(acc.invite_used || '-')}</b></div>
+    <div class="kv">新邀请码: <b>${escapeHtml(invite)}</b></div>
+    <div class="kv">时间: <b>${escapeHtml(acc.created_at || '-')}</b></div>
+    ${acc.error ? `<div class="kv" style="color:var(--warn)">错误: ${escapeHtml(acc.error)}</div>` : ''}
+    <div class="copy">
+      <button class="btn-secondary" data-copy="${escapeHtml(invite)}">复制邀请码</button>
+      <button class="btn-ghost" data-copy="${escapeHtml(acc.access_token || '')}">复制 Token</button>
+    </div>
+  `;
+  div.querySelectorAll('[data-copy]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const v = btn.getAttribute('data-copy') || '';
+      if (!v || v === '-') { toast('无内容'); return; }
+      await navigator.clipboard.writeText(v);
+      toast('已复制');
+    });
+  });
+  if (prepend) box.prepend(div); else box.appendChild(div);
+}
+
+async function loadAccounts() {
+  const r = await fetch('/api/accounts');
+  const data = await r.json();
+  const box = $('accounts');
+  box.innerHTML = '';
+  (data.items || []).forEach(acc => renderAccount(acc, false));
+}
+
+async function startRegister() {
+  await saveConfig();
+  const cfg = readFormConfig();
+  const count = Math.max(1, Number($('count').value || 1));
+  const body = {
+    count,
+    seed_invite: cfg.seed_invite,
+    login_base: cfg.login_base,
+    otp_timeout: cfg.otp_timeout,
+    create_invite: $('create_invite').checked,
+    stop_on_error: $('stop_on_error').checked,
+    email: count === 1 ? ($('fixed_email').value.trim() || null) : null,
+  };
+  $('btnStart').disabled = true;
+  appendLog(`发起注册任务 count=${count}`, 'dim');
+  if (es) { es.close(); es = null; }
+  try {
+    const r = await fetch('/api/register', {
+      method: 'POST',
+      headers: {'content-type':'application/json'},
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!data.ok) {
+      appendLog('启动失败: ' + (data.error || r.status), 'err');
+      $('btnStart').disabled = false;
+      return;
+    }
+    const taskId = data.task_id;
+    appendLog('task_id=' + taskId, 'dim');
+    es = new EventSource('/api/stream/' + taskId);
+    es.addEventListener('log', (ev) => {
+      try {
+        const item = JSON.parse(ev.data);
+        const msg = item.msg || '';
+        const cls = /失败|错误|异常|FAIL/i.test(msg) ? 'err'
+          : /成功|完成|就绪|OK/i.test(msg) ? 'ok' : '';
+        appendLog(msg, cls);
+        const m = msg.match(/下一轮将使用新邀请码:\s*(\S+)/);
+        if (m) $('seed_invite').value = m[1];
+        const m2 = msg.match(/邀请码就绪:\s*(\S+)/);
+        if (m2) $('seed_invite').value = m2[1];
+      } catch {}
+    });
+    es.addEventListener('account', (ev) => {
+      try {
+        const acc = JSON.parse(ev.data);
+        renderAccount(acc, true);
+        if (acc.ok && acc.invite_created) {
+          $('seed_invite').value = acc.invite_created;
+        }
+      } catch {}
+    });
+    es.addEventListener('done', (ev) => {
+      try {
+        const d = JSON.parse(ev.data);
+        appendLog(`任务结束 status=${d.status} summary=${JSON.stringify(d.summary||{})}`, d.status==='done'?'ok':'err');
+      } catch {
+        appendLog('任务结束', 'ok');
+      }
+      if (es) { es.close(); es = null; }
+      $('btnStart').disabled = false;
+      loadAccounts();
+    });
+    es.onerror = () => {
+      appendLog('SSE 连接中断（若任务已结束可忽略）', 'dim');
+    };
+  } catch (e) {
+    appendLog(String(e), 'err');
+    $('btnStart').disabled = false;
+  }
+}
+
+$('btnSave').onclick = saveConfig;
+$('btnReload').onclick = loadConfig;
+$('btnRefreshAcc').onclick = loadAccounts;
+$('btnStart').onclick = startRegister;
+
+loadConfig().then(loadAccounts);
+</script>
+</body>
+</html>

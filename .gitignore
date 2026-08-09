@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+config.json
+data/accounts.json
+data/*.json
+!data/.gitkeep
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
